@@ -1,0 +1,6 @@
+*_pb2.py
+metricq.egg-info
+.eggs/
+__pycache__/
+venv/
+build/
