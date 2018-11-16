@@ -1,0 +1,77 @@
+// Copyright (c) 2018, ZIH, Technische Universitaet Dresden, Federal Republic of Germany
+//
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright notice,
+//       this list of conditions and the following disclaimer in the documentation
+//       and/or other materials provided with the distribution.
+//     * Neither the name of metricq nor the names of its contributors
+//       may be used to endorse or promote products derived from this software
+//       without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#include "aggragator.hpp"
+#include "log.hpp"
+
+#include <metricq/ostream.hpp>
+
+Aggregator::Aggregator(const std::string& token)
+: metricq::Transformer(token), signals_(io_service, SIGINT, SIGTERM)
+{
+    signals_.async_wait([this](auto, auto signal) {
+        if (!signal)
+        {
+            return;
+        }
+        Log::info() << "Caught signal " << signal << ". Shutdown.";
+        close();
+    });
+}
+
+Aggregator::~Aggregator()
+{
+}
+
+void Aggregator::on_transformer_config(const metricq::json& config)
+{
+    for (const auto& elem : config["metrics"].items())
+    {
+        const auto out_metric = elem.key();
+        const auto in_metric = elem.value().at("rawMetric").get<std::string>();
+        const auto rate_hz = elem.value().at("rate").get<float>();
+        const auto max_interval = metricq::duration_cast(std::chrono::duration<float>(1 / rate_hz));
+
+        Log::info() << "Aggregating " << in_metric << " to " << out_metric
+                    << " with a max interval of " << max_interval;
+        aggregation_metrics.emplace(std::piecewise_construct, std::forward_as_tuple(in_metric),
+                                    std::forward_as_tuple((*this)[out_metric], max_interval));
+        // TODO check for duplicates?
+    }
+}
+
+void Aggregator::on_transformer_ready()
+{
+    // nothing to do here
+}
+
+void Aggregator::on_data(const std::string& id, metricq::TimeValue tv)
+{
+    // TODO work on chunks, more efficient
+    aggregation_metrics.at(id).push(tv);
+}
