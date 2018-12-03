@@ -70,6 +70,12 @@ void Aggregator::on_transformer_ready()
     // nothing to do here
 }
 
+void Aggregator::on_data(const std::string& id, const metricq::DataChunk& chunk)
+{
+    Transformer::on_data(id, chunk);
+    aggregation_metrics.at(id).flush();
+}
+
 void Aggregator::on_data(const std::string& id, metricq::TimeValue tv)
 {
     // TODO work on chunks, more efficient

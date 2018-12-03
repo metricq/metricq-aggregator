@@ -32,6 +32,8 @@ AggregationMetric::AggregationMetric(metricq::Transformer::Metric& write_metric,
                                      metricq::Duration max_interval)
 : write_metric_(write_metric), max_interval_(max_interval)
 {
+    // TODO configurable
+    write_metric_.set_chunksize(128);
 }
 
 void AggregationMetric::push(metricq::TimeValue tv)
@@ -59,4 +61,9 @@ void AggregationMetric::push(metricq::TimeValue tv)
     last_sample_time_ = tv.time;
     sum_ += tv.value;
     count_++;
+}
+
+void AggregationMetric::flush()
+{
+    write_metric_.flush();
 }

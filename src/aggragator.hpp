@@ -45,6 +45,7 @@ public:
 private:
     void on_transformer_config(const metricq::json& config) override;
     void on_transformer_ready() override;
+    void on_data(const std::string& id, const metricq::DataChunk& chunk) override;
     void on_data(const std::string& id, metricq::TimeValue tv) override;
 
 private:

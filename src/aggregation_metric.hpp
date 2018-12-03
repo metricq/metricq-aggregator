@@ -37,6 +37,7 @@ class AggregationMetric
 public:
     AggregationMetric(metricq::Transformer::Metric& write_metric, metricq::Duration max_interval);
     void push(metricq::TimeValue tv);
+    void flush();
 
 private:
     metricq::Transformer::Metric& write_metric_;
