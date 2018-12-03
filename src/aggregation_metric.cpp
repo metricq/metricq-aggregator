@@ -33,7 +33,7 @@ AggregationMetric::AggregationMetric(metricq::Transformer::Metric& write_metric,
 : write_metric_(write_metric), max_interval_(max_interval)
 {
     // we flush manually for each chunk we receive
-    write_metric_.set_chunksize(0);
+    write_metric_.chunk_size(0);
 }
 
 void AggregationMetric::push(metricq::TimeValue tv)
