@@ -83,10 +83,15 @@ int main(int argc, char* argv[])
         aggregator.main_loop();
         Log::info() << "Exiting main loop...";
     }
-    catch (nitro::broken_options::parser_error& e)
+    catch (nitro::broken_options::parsing_error& e)
     {
         Log::warn() << e.what();
         parser.usage();
+        return 1;
+    }
+    catch (nitro::broken_options::parser_error& e)
+    {
+        Log::error() << "broken options are broken " << e.what();
         return 1;
     }
     catch (std::exception& e)
