@@ -61,6 +61,7 @@ void Aggregator::on_transformer_config(const metricq::json& config)
                     << " with a max interval of " << max_interval;
         aggregation_metrics.emplace(std::piecewise_construct, std::forward_as_tuple(in_metric),
                                     std::forward_as_tuple((*this)[out_metric], max_interval));
+        input_metrics.emplace_back(in_metric);
         // TODO check for duplicates?
     }
 }
