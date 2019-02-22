@@ -1,6 +1,6 @@
-project(metricq-aggregator)
-
 cmake_minimum_required(VERSION 3.9)
+
+project(metricq-aggregator)
 
 include(cmake/DefaultBuildType.cmake)
 include(cmake/GitSubmoduleUpdate.cmake)
@@ -12,11 +12,6 @@ add_subdirectory(lib/nitro)
 set(SRCS src/main.cpp src/aggregation_metric.cpp src/aggragator.cpp src/log.cpp src/main.cpp)
 
 add_executable(metricq-aggregator ${SRCS})
-target_include_directories(metricq-aggregator
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-)
 
 target_compile_features(metricq-aggregator PUBLIC cxx_std_17)
 target_compile_options(metricq-aggregator PUBLIC -Wall -Wextra -pedantic)
