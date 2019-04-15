@@ -2,7 +2,3 @@
 	path = lib/metricq
 	url = https://github.com/metricq/metricq.git
 	branch = master
-[submodule "lib/nitro"]
-	path = lib/nitro
-	url = https://github.com/tud-zih-energy/nitro.git
-	branch = master

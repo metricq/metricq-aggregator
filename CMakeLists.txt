@@ -7,9 +7,8 @@ include(cmake/GitSubmoduleUpdate.cmake)
 git_submodule_update()
 
 add_subdirectory(lib/metricq)
-add_subdirectory(lib/nitro)
 
-set(SRCS src/main.cpp src/aggregation_metric.cpp src/aggragator.cpp src/log.cpp src/main.cpp)
+set(SRCS src/main.cpp src/aggregation_metric.cpp src/aggragator.cpp src/main.cpp)
 
 add_executable(metricq-aggregator ${SRCS})
 
@@ -19,6 +18,7 @@ target_compile_options(metricq-aggregator PUBLIC -Wall -Wextra -pedantic)
 target_link_libraries(metricq-aggregator
     PUBLIC
         metricq::transformer
+        metricq::logger-nitro
         Nitro::env
         Nitro::log
         Nitro::jiffy

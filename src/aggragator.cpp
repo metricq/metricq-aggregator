@@ -27,9 +27,11 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "aggragator.hpp"
-#include "log.hpp"
 
+#include <metricq/logger/nitro.hpp>
 #include <metricq/ostream.hpp>
+
+using Log = metricq::logger::nitro::Log;
 
 Aggregator::Aggregator(const std::string& token)
 : metricq::Transformer(token), signals_(io_service, SIGINT, SIGTERM)
