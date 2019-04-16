@@ -61,8 +61,10 @@ void Aggregator::on_transformer_config(const metricq::json& config)
 
         Log::info() << "Aggregating " << in_metric << " to " << out_metric
                     << " with a max interval of " << max_interval;
-        aggregation_metrics.emplace(std::piecewise_construct, std::forward_as_tuple(in_metric),
-                                    std::forward_as_tuple((*this)[out_metric], max_interval));
+        auto res =
+            aggregation_metrics.emplace(std::piecewise_construct, std::forward_as_tuple(in_metric),
+                                        std::forward_as_tuple((*this)[out_metric], max_interval));
+        res.first->second.metric().metadata.rate(rate_hz);
         input_metrics.emplace_back(in_metric);
         // TODO check for duplicates?
     }
@@ -70,7 +72,19 @@ void Aggregator::on_transformer_config(const metricq::json& config)
 
 void Aggregator::on_transformer_ready()
 {
-    // nothing to do here
+    for (auto& metric : aggregation_metrics)
+    {
+        for (auto metadatum = metadata_[metric.first].begin();
+             metadatum != metadata_[metric.first].end(); metadatum++)
+        {
+            if (metadatum.key() == "rate")
+            {
+                continue;
+            }
+
+            metric.second.metric().metadata[metadatum.key()] = metadatum.value();
+        }
+    }
 }
 
 void Aggregator::on_data(const std::string& id, const metricq::DataChunk& chunk)

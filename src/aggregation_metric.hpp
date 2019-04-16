@@ -39,6 +39,11 @@ public:
     void push(metricq::TimeValue tv);
     void flush();
 
+    metricq::Transformer::Metric& metric()
+    {
+        return write_metric_;
+    }
+
 private:
     metricq::Transformer::Metric& write_metric_;
     const metricq::Duration max_interval_;
