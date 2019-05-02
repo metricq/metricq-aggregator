@@ -55,7 +55,7 @@ void Aggregator::on_transformer_config(const metricq::json& config)
     for (const auto& elem : config["metrics"].items())
     {
         const auto out_metric = elem.key();
-        const auto in_metric = elem.value().at("rawMetric").get<std::string>();
+        const auto in_metric = elem.value().at("raw_metric").get<std::string>();
         const auto rate_hz = elem.value().at("rate").get<float>();
         const auto max_interval = metricq::duration_cast(std::chrono::duration<float>(1 / rate_hz));
 
