@@ -55,7 +55,7 @@ void Aggregator::on_transformer_config(const metricq::json& config)
     for (const auto& elem : config["metrics"].items())
     {
         const auto out_metric = elem.key();
-        const auto in_metric = elem.value().at("raw_metric").get<std::string>();
+        const auto in_metric = elem.value().at("source").get<std::string>();
         const auto rate_hz = elem.value().at("rate").get<float>();
         const auto max_interval = metricq::duration_cast(std::chrono::duration<float>(1 / rate_hz));
 
@@ -65,7 +65,7 @@ void Aggregator::on_transformer_config(const metricq::json& config)
             aggregation_metrics[in_metric].emplace_back((*this)[out_metric], max_interval);
         n.metric().metadata.rate(rate_hz);
         n.metric().metadata.scope(metricq::Metadata::Scope::last);
-        n.metric().metadata["original"] = in_metric;
+        n.metric().metadata["source"] = in_metric;
         input_metrics.emplace_back(in_metric);
         // TODO check for duplicates?
     }
