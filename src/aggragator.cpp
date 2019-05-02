@@ -61,10 +61,11 @@ void Aggregator::on_transformer_config(const metricq::json& config)
 
         Log::info() << "Aggregating " << in_metric << " to " << out_metric
                     << " with a max interval of " << max_interval;
-        auto res =
-            aggregation_metrics.emplace(std::piecewise_construct, std::forward_as_tuple(in_metric),
-                                        std::forward_as_tuple((*this)[out_metric], max_interval));
-        res.first->second.metric().metadata.rate(rate_hz);
+        AggregationMetric& n =
+            aggregation_metrics[in_metric].emplace_back((*this)[out_metric], max_interval);
+        n.metric().metadata.rate(rate_hz);
+        n.metric().metadata.scope(metricq::Metadata::Scope::last);
+        n.metric().metadata["original"] = in_metric;
         input_metrics.emplace_back(in_metric);
         // TODO check for duplicates?
     }
@@ -72,17 +73,20 @@ void Aggregator::on_transformer_config(const metricq::json& config)
 
 void Aggregator::on_transformer_ready()
 {
-    for (auto& metric : aggregation_metrics)
+    for (auto& [in_metric_name, metrics] : aggregation_metrics)
     {
-        for (auto metadatum = metadata_[metric.first].begin();
-             metadatum != metadata_[metric.first].end(); metadatum++)
+        for (auto& metric : metrics)
         {
-            if (metadatum.key() == "rate")
+            for (auto metadatum = metadata_[in_metric_name].begin();
+                 metadatum != metadata_[in_metric_name].end(); metadatum++)
             {
-                continue;
-            }
+                if (metadatum.key() == "rate" || metadatum.key() == "scope")
+                {
+                    continue;
+                }
 
-            metric.second.metric().metadata[metadatum.key()] = metadatum.value();
+                metric.metric().metadata[metadatum.key()] = metadatum.value();
+            }
         }
     }
 }
@@ -90,11 +94,17 @@ void Aggregator::on_transformer_ready()
 void Aggregator::on_data(const std::string& id, const metricq::DataChunk& chunk)
 {
     Transformer::on_data(id, chunk);
-    aggregation_metrics.at(id).flush();
+    for (auto& m : aggregation_metrics.at(id))
+    {
+        m.flush();
+    }
 }
 
 void Aggregator::on_data(const std::string& id, metricq::TimeValue tv)
 {
     // TODO work on chunks, more efficient
-    aggregation_metrics.at(id).push(tv);
+    for (auto& m : aggregation_metrics.at(id))
+    {
+        m.push(tv);
+    }
 }
