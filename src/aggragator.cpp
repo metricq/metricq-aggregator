@@ -80,7 +80,8 @@ void Aggregator::on_transformer_ready()
             for (auto metadatum = metadata_[in_metric_name].begin();
                  metadatum != metadata_[in_metric_name].end(); metadatum++)
             {
-                if (metadatum.key() == "rate" || metadatum.key() == "scope")
+                if (metadatum.key() == "rate" || metadatum.key() == "scope" ||
+                    metadatum.key() == "historic" || metadatum.key() == "date")
                 {
                     continue;
                 }
