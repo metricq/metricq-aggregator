@@ -29,6 +29,7 @@
 #pragma once
 
 #include <metricq/chrono.hpp>
+#include <metricq/metadata.hpp>
 #include <metricq/transformer.hpp>
 #include <metricq/types.hpp>
 
@@ -43,6 +44,8 @@ public:
     {
         return write_metric_;
     }
+
+    void set_metadata(const metricq::Metadata& metadata);
 
 private:
     metricq::Transformer::Metric& write_metric_;

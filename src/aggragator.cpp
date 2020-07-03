@@ -62,7 +62,7 @@ void Aggregator::on_transformer_config(const metricq::json& config)
         Log::info() << "Aggregating " << in_metric << " to " << out_metric
                     << " with a max interval of " << max_interval;
         AggregationMetric& n =
-            aggregation_metrics[in_metric].emplace_back((*this)[out_metric], max_interval);
+            aggregation_metrics_[in_metric].emplace_back((*this)[out_metric], max_interval);
         n.metric().metadata.rate(rate_hz);
         n.metric().metadata.scope(metricq::Metadata::Scope::last);
         n.metric().metadata["primary"] = in_metric;
@@ -73,21 +73,11 @@ void Aggregator::on_transformer_config(const metricq::json& config)
 
 void Aggregator::on_transformer_ready()
 {
-    for (auto& [in_metric_name, metrics] : aggregation_metrics)
+    for (auto& [in_metric_name, metrics] : aggregation_metrics_)
     {
         for (auto& metric : metrics)
         {
-            for (auto metadatum = metadata_[in_metric_name].begin();
-                 metadatum != metadata_[in_metric_name].end(); metadatum++)
-            {
-                if (metadatum.key() == "rate" || metadatum.key() == "scope" ||
-                    metadatum.key() == "historic" || metadatum.key() == "date")
-                {
-                    continue;
-                }
-
-                metric.metric().metadata[metadatum.key()] = metadatum.value();
-            }
+            metric.set_metadata(metadata_[in_metric_name]);
         }
     }
 }
@@ -95,7 +85,7 @@ void Aggregator::on_transformer_ready()
 void Aggregator::on_data(const std::string& id, const metricq::DataChunk& chunk)
 {
     Transformer::on_data(id, chunk);
-    for (auto& m : aggregation_metrics.at(id))
+    for (auto& m : aggregation_metrics_.at(id))
     {
         m.flush();
     }
@@ -104,7 +94,7 @@ void Aggregator::on_data(const std::string& id, const metricq::DataChunk& chunk)
 void Aggregator::on_data(const std::string& id, metricq::TimeValue tv)
 {
     // TODO work on chunks, more efficient
-    for (auto& m : aggregation_metrics.at(id))
+    for (auto& m : aggregation_metrics_.at(id))
     {
         m.push(tv);
     }

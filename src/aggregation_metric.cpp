@@ -67,3 +67,17 @@ void AggregationMetric::flush()
 {
     write_metric_.flush();
 }
+
+void AggregationMetric::set_metadata(const metricq::Metadata& metadata)
+{
+    for (auto metadatum = metadata.begin(); metadatum != metadata.end(); metadatum++)
+    {
+        if (metadatum.key() == "rate" || metadatum.key() == "scope" ||
+            metadatum.key() == "historic" || metadatum.key() == "date")
+        {
+            continue;
+        }
+
+        write_metric_.metadata[metadatum.key()] = metadatum.value();
+    }
+}

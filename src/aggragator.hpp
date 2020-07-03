@@ -50,5 +50,5 @@ private:
 
 private:
     asio::signal_set signals_;
-    std::unordered_map<std::string, std::vector<AggregationMetric>> aggregation_metrics;
+    std::unordered_map<std::string, std::vector<AggregationMetric>> aggregation_metrics_;
 };
