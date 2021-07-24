@@ -66,7 +66,7 @@ void Aggregator::on_transformer_config(const metricq::json& config)
         n.metric().metadata.rate(rate_hz);
         n.metric().metadata.scope(metricq::Metadata::Scope::last);
         n.metric().metadata["primary"] = in_metric;
-        input_metrics.emplace_back(in_metric);
+        input_metrics.emplace(in_metric);
         // TODO check for duplicates?
     }
 }

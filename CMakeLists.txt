@@ -19,7 +19,7 @@ target_link_libraries(metricq-aggregator
     PUBLIC
         metricq::transformer
         metricq::logger-nitro
-        Nitro::env
+        Nitro::options
 )
 
 install(TARGETS metricq-aggregator RUNTIME DESTINATION bin)
